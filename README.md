@@ -1,8 +1,8 @@
 # Graph Convolutional Network in Cyclops Tensor Framework
 
-Graph convolutional network in ctf, numpy and scipy
-
 ![badge](https://img.shields.io/badge/CTF%20PYTHON-GCN-green.svg?&logoColor=3272A5&color=86b200&style=for-the-badge&logo=python)
+
+Graph convolutional network in ctf, numpy and scipy
 
 ## Building
 
