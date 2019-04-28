@@ -29,9 +29,14 @@ def train(model, features, adj, y_train, y_val, train_mask, val_mask, lr=0.1, ep
         train_accuracy = model.accuracy(adj, features, y_train, train_mask)
         val_accuracy = model.accuracy(adj, features, y_val, val_mask)
 
-        print("Epoch:", '%04d' % (epoch + 1), "train_loss=", "{:.5f}".format(train_loss),
-          "train_acc=", "{:.5f}".format(train_accuracy), "val_loss=", "{:.5f}".format(val_loss),
-          "val_acc=", "{:.5f}".format(val_accuracy), "time=", "{:.5f}".format(end - start))
+        if model.package == "ctf" and ctf.comm().rank() == 0:
+            print("Epoch:", '%04d' % (epoch + 1), "train_loss=", "{:.5f}".format(train_loss),
+                "train_acc=", "{:.5f}".format(train_accuracy), "val_loss=", "{:.5f}".format(val_loss),
+                "val_acc=", "{:.5f}".format(val_accuracy), "time=", "{:.5f}".format(end - start))
+        elif model.package != "ctf":
+            print("Epoch:", '%04d' % (epoch + 1), "train_loss=", "{:.5f}".format(train_loss),
+                "train_acc=", "{:.5f}".format(train_accuracy), "val_loss=", "{:.5f}".format(val_loss),
+                "val_acc=", "{:.5f}".format(val_accuracy), "time=", "{:.5f}".format(end - start))
 
         computation_time += (end - start)
 
@@ -55,7 +60,10 @@ def train(model, features, adj, y_train, y_val, train_mask, val_mask, lr=0.1, ep
                         break
     # total time
     stop = time.time()
-    print("Total time: {:.4f}s, ".format(stop - begin), "Computation time: {:.4f}s".format(computation_time))
+    if model.package == "ctf" and ctf.comm().rank() == 0:
+        print("Total time: {:.4f}s, ".format(stop - begin), "Computation time: {:.4f}s".format(computation_time))
+    elif model.package != "ctf":
+        print("Total time: {:.4f}s, ".format(stop - begin), "Computation time: {:.4f}s".format(computation_time))
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -70,7 +78,11 @@ if __name__ == '__main__':
     parser.add_argument('--save_best', type=bool, default=False, help='Save the best model according to validation loss')
     args = parser.parse_args()
 
-    print("Params: lr={:.4f}, epochs={}, weight_decay={:.5f}, patience={}, hidden_size={}, num_layers={}, package={}, dataset={}"\
+    if args.package == "ctf" and ctf.comm().rank() == 0:
+        print("Params: lr={:.4f}, epochs={}, weight_decay={:.5f}, patience={}, hidden_size={}, num_layers={}, package={}, dataset={}"\
+    .format(args.lr, args.epochs, args.weight_decay, args.patience, args.hidden_size, args.num_layers, args.package, args.dataset))
+    elif args.package != "ctf":
+        print("Params: lr={:.4f}, epochs={}, weight_decay={:.5f}, patience={}, hidden_size={}, num_layers={}, package={}, dataset={}"\
     .format(args.lr, args.epochs, args.weight_decay, args.patience, args.hidden_size, args.num_layers, args.package, args.dataset))
 
     if args.dataset == "cora":
@@ -100,6 +112,9 @@ if __name__ == '__main__':
         adj = ctf.astensor(adj)
         features = ctf.astensor(features)
 
+        adj = ctf.tensor(sp=True, copy=adj)
+        features = ctf.tensor(sp=True, copy=features)
+
     input_size = features.shape[1]
     output_size = y_train.shape[1]
 
@@ -118,4 +133,7 @@ if __name__ == '__main__':
     # model.load('params/best.pkl')
     # test_loss = model.loss(adj, features, y_test, test_mask)
     test_accuracy = model.accuracy(adj, features, y_test, test_mask)
-    print("Test Accuracy:","{:.5f}".format(test_accuracy))
+    if args.package == "ctf" and ctf.comm().rank() == 0:
+        print("Test Accuracy:","{:.5f}".format(test_accuracy))
+    elif args.package != "ctf":
+        print("Test Accuracy:","{:.5f}".format(test_accuracy))

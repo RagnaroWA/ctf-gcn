@@ -64,6 +64,7 @@ class GCN:
                     temp_array = ctf.to_nparray(layer_output["layer" + str(i + 1)])
                     layer_output_nonlinear["layer" + str(i + 1)] = softmax(temp_array)
                     layer_output_nonlinear["layer" + str(i + 1)] = ctf.astensor(layer_output_nonlinear["layer" + str(i + 1)])
+                    # print(layer_output_nonlinear["layer" + str(self.num_layers)].sp)
             return layer_output_nonlinear["layer" + str(self.num_layers)]
 
     def backward(self, X, y, A, mask, lr):
@@ -73,8 +74,6 @@ class GCN:
 
     def prop_back(self, A, X, y, mask):
         gradients = {}
-        for i in range(self.num_layers):
-            gradients["W" + str(i + 1)] = np.zeros(self.params["W" + str(i + 1)].shape)
 
         preds = self.forward(A, X)
         if self.package != "ctf":
@@ -107,11 +106,10 @@ class GCN:
                 out_grad = A.T() @ last_loss @ self.params["W" + str(i + 1)].T()
                 grad = out_grad * self.nonlinearity_grad(self.layer_output["layer" + str(i)])
                 gradients["W" + str(i)] = self.layer_output["layer" + str(i - 1)].T() @ A.T() @ grad
-
+                print(gradients["W" + str(i)].sp)
 
         for i in range(self.num_layers):
             gradients["W" + str(i + 1)] += self.weight_decay * self.params["W" + str(i + 1)]
-
         return gradients
 
     def predict(self, A, X):
@@ -143,10 +141,9 @@ class GCN:
         
         for i in range(self.num_layers):
             if self.package != "ctf":
-                l2_loss = np.sum(np.linalg.norm(self.params["W" + str(i + 1)], ord='fro')**2 * 0.5) * self.weight_decay
+                l2_loss = np.sum(np.linalg.norm(self.params["W" + str(i + 1)], ord='fro') * 0.5) * self.weight_decay
             else:
-                temp_array = ctf.to_nparray(self.params["W" + str(i + 1)])
-                l2_loss = np.sum(np.linalg.norm(temp_array, ord='fro')**2 * 0.5) * self.weight_decay
+                l2_loss = self.params["W" + str(i + 1)].norm2() * 0.5 * self.weight_decay
             loss += l2_loss
         return loss
 
