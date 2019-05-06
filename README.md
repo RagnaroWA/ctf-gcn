@@ -7,7 +7,7 @@ Graph convolutional network in ctf, numpy and scipy
 ## Building
 
 * `pip install -r requirements.txt` to install the required python package first.
-* To install Cyclops Tensor Framework (CTF) which is a parallel (distributed-memory) numerical library for multidimensional arrays (tensors) in C++ and Python, please refer to [Cyclops Tensor Framework](https://github.com/cyclops-community/ctf).
+* To install Cyclops Tensor Framework (CTF) which is a parallel (distributed-memory) numerical library for multidimensional arrays (tensors) in C++ and Python, please refer to [Cyclops Tensor Framework Building and Testing](https://github.com/cyclops-community/ctf/wiki/Building-and-testing).
 
 ## Usage
 
